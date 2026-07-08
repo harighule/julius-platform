@@ -205,8 +205,8 @@ export default function IntelligencePage() {
 
   const fetchLookupHistory = useCallback(async () => {
     try {
-      const r = await axios.get<LookupRecord[]>('/api/intelligence/company-lookup/history')
-      setLookupHistory(r.data)
+      const r = await axios.get<{ records: LookupRecord[] }>('/api/intelligence/company-lookup/history')
+      setLookupHistory(Array.isArray(r.data.records) ? r.data.records : [])
     } catch { /* ignore */ }
   }, [])
 
