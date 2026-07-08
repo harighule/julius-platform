@@ -1,0 +1,256 @@
+﻿
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\auth\LoginPage.tsx
+  25:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\auth\useAuth.ts
+  29:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\auth\useAuth.ts:29:7
+  27 |         .finally(() => setLoading(false))
+  28 |     } else {
+> 29 |       setLoading(false)
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  30 |     }
+  31 |   }, [])
+  32 |  react-hooks/set-state-in-effect
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\components\CyberOpsTerminal.tsx
+   22:28  error  Unnecessary escape character: \"                    no-useless-escape
+   22:30  error  Unnecessary escape character: \"                    no-useless-escape
+   22:32  error  Unnecessary escape character: \"                    no-useless-escape
+   22:65  error  Unnecessary escape character: \"                    no-useless-escape
+   22:67  error  Unnecessary escape character: \"                    no-useless-escape
+   22:69  error  Unnecessary escape character: \"                    no-useless-escape
+   25:39  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  227:24  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  228:21  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  241:11  error  'snippet' is never reassigned. Use 'const' instead  prefer-const
+  279:13  error  Empty block statement                               no-empty
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\components\GlobalNewsTicker.tsx
+  36:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  61:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\components\Globe3D.tsx
+   14:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  189:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  191:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  192:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  195:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  199:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  200:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  202:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  203:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  204:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\components\GlobeNewsPanel.tsx
+  65:18  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\components\GlobeNewsPanel.tsx:65:18
+  63 |     if (!iso) return ''
+  64 |     try {
+> 65 |       const ms = Date.now() - new Date(iso).getTime()
+     |                  ^^^^^^^^^^ Cannot call impure function
+  66 |       const h = Math.floor(ms / 3600000)
+  67 |       if (h < 1) return `${Math.max(1, Math.floor(ms / 60000))}m ago`
+  68 |       if (h < 24) return `${h}h ago`  react-hooks/purity
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\components\MonitorKeywords.tsx
+  18:11  error  Empty block statement  no-empty
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\components\StatusBar.tsx
+  43:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\lib\api.ts
+   21:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   45:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   78:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   90:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  189:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  238:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  239:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  243:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  244:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\lib\monitorData.ts
+  152:11  error  Empty block statement  no-empty
+  167:11  error  Empty block statement  no-empty
+  178:11  error  Empty block statement  no-empty
+  189:11  error  Empty block statement  no-empty
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\BehavioralPanel.tsx
+   16:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   27:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   35:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   46:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  147:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  157:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\DarkWebPanel.tsx
+   37:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  161:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  183:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  227:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\DashboardPanel.tsx
+  60:7  error  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\EventsPanel.tsx
+   14:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   28:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\ExploitsPanel.tsx
+  42:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  61:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  80:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\FilesPanel.tsx
+    8:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\IdentityPanel.tsx
+   15:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:93  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\InsightsPanel.tsx
+  159:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  189:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\MonitorPanel.tsx
+  73:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\MonitorPanel.tsx:73:5
+  71 |
+  72 |   useEffect(() => {
+> 73 |     loadData()
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  74 |     const interval = setInterval(loadData, 3 * 60 * 1000)
+  75 |     return () => clearInterval(interval)
+  76 |   }, [loadData])  react-hooks/set-state-in-effect
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\PantheonCommandCenterPanel.tsx
+  135:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\ScannerPanel.tsx
+   10:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   83:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  109:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\SettingsPanel.tsx
+   95:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\TerminalPanel.tsx
+  17:40  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  36:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\TerminalPanel.tsx:36:5
+  34 |
+  35 |   useEffect(() => {
+> 36 |     fetchHistory()
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  37 |     const interval = setInterval(fetchHistory, 2000)
+  38 |     return () => clearInterval(interval)
+  39 |   }, [])  react-hooks/set-state-in-effect
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\ThreatFeedsPanel.tsx
+   77:9   warning  The 'feeds' logical expression could make the dependencies of useMemo Hook (at line 87) change on every render. To fix this, wrap the initialization of 'feeds' in its own useMemo() Hook   react-hooks/exhaustive-deps
+   77:9   warning  The 'feeds' logical expression could make the dependencies of useMemo Hook (at line 102) change on every render. To fix this, wrap the initialization of 'feeds' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   79:63  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+   84:23  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+   90:29  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+  123:29  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+  123:44  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+  205:50  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+  206:46  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+  387:64  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+  403:27  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\panels\ToolsPanel.tsx
+    5:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   29:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   36:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   43:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  209:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  264:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  270:85  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  276:68  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  282:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  292:95  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  306:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  387:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  408:78  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\worldmonitor\engine\MonitorProvider.tsx
+   10:10  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   11:12  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   12:12  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   13:15  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   14:14  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   16:11  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   85:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+G:\Juliet-feature-panopticon-soc-ui\Juliet-feature-panopticon-soc-ui\JULIUS\frontend\src\worldmonitor\engine\MonitorProvider.tsx:85:5
+  83 |   // Initialization & Polling
+  84 |   useEffect(() => {
+> 85 |     refreshAll();
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  86 |     
+  87 |     // Staggered refresh based on worldmonitor priority logic
+  88 |     const interval = setInterval(() => {  react-hooks/set-state-in-effect
+  103:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-refresh/only-export-components
+
+Γ£û 129 problems (127 errors, 2 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

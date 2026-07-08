@@ -1,0 +1,168 @@
+# ══════════════════════════════════════════════════════════════════
+# JULIUS — .gitignore
+# ══════════════════════════════════════════════════════════════════
+
+# ── Environment & Secrets ──────────────────────────────────────────
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.staging
+*.env
+.envrc
+
+# ── API Keys & Credentials ────────────────────────────────────────
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.secret
+*credentials*
+*secrets*
+*.gpg
+service-account*.json
+
+# ── Python ─────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+.Python
+develop-eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.manifest
+*.spec
+.installed.cfg
+
+# ── Virtual Environments ───────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+.virtualenv/
+
+# ── Node.js / Frontend ────────────────────────────────────────────
+node_modules/
+dist/
+.next/
+.nuxt/
+.output/
+.cache/
+*.tsbuildinfo
+.eslintcache
+.parcel-cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── Database & Data ───────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sql.gz
+*.dump
+
+# ── Logs ───────────────────────────────────────────────────────────
+*.log
+logs/
+*.log.*
+
+# ── IDE & Editor ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ── OS Files ───────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Docker ─────────────────────────────────────────────────────────
+docker-compose.override.yml
+.docker/
+
+# ── Testing & Coverage ────────────────────────────────────────────
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+.mypy_cache/
+coverage/
+*.cover
+
+# ── Misc ───────────────────────────────────────────────────────────
+*.bak
+*.tmp
+*.temp
+*.orig
+*.old
+.gemini/
+
+# ── Project Specific Ignores ────────────────────────────────────────
+Juliet-main/
+katzenpost/
+liboqs/
+nym/
+sf_julius/
+worldmonitor-main/
+crates/sphinx/target/
+/target/
+data/
+*.exe
+*.deb
+*.deb.*
+-H
+-d
+=0.7.0
+=1.0.0
+audit.log
+
+# ── Large Binary & Generated Files ──────────────────────────────────
+*.png
+*.gif
+*.jpg
+*.jpeg
+*.webp
+*.pdf
+backend/sandbox/reports/
+structure.txt
+backend/services/uk_signal_collector.py
+
+
+

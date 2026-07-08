@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@400;700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-julius-bg: #0a0a0f;
+  --color-julius-surface: #0d0d14;
+  --color-julius-surface2: #0f1018;
+  --color-julius-border: #1a1d2e;
+  --color-julius-accent: #00d4ff;
+  --color-julius-green: #00ff88;
+  --color-julius-red: #ff3355;
+  --color-julius-amber: #ffaa00;
+  --color-julius-text: #c8d0e0;
+  --color-julius-muted: #5a6278;
+}
+
+body {
+  margin: 0;
+  background: var(--color-julius-bg);
+  color: var(--color-julius-text);
+  font-family: 'JetBrains Mono', monospace;
+  overflow-x: hidden;
+}
+
+/* Global Scanlines Overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  opacity: 0.6;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-julius-border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-julius-accent); }
+
+/* Utility for display headers */
+.font-display { font-family: 'Orbitron', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Custom Glows */
+.glow-cyan { text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
+.glow-green { text-shadow: 0 0 10px rgba(0, 255, 136, 0.5); }
+.glow-red { text-shadow: 0 0 10px rgba(255, 51, 85, 0.5); }

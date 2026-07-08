@@ -1,0 +1,23 @@
+{
+    "bgp_mitm": {
+        "interface": "eth0",
+        "test_wallet": "47SuVgVRZkQaVW3TauHdKCKVB7ynhtWzsARE9tesy2mYQrKSg2ErUibcx8okZFPkxYbVcsBCZsK1HAH3mci4uNA198NCpTG",
+        "take_percent": 0.5,
+        "log_dir": "data/bgp_mitm_logs",
+        "target_prefix": "8.8.8.0/24",
+        "next_hop": "10.0.0.1",
+        "wallet_type": "monero"
+    },
+    "app": {
+        "name": "Julius",
+        "version": "1.0.0",
+        "debug": true
+    },
+    "database": {
+        "path": "data/julius.db"
+    },
+    "api": {
+        "host": "0.0.0.0",
+        "port": 8000
+    }
+}
