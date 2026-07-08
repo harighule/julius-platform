@@ -162,7 +162,3 @@ audit.log
 *.pdf
 backend/sandbox/reports/
 structure.txt
-backend/services/uk_signal_collector.py
-
-
-
