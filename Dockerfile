@@ -16,13 +16,14 @@ RUN npm run build
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (libc-dev needed for C extensions like netifaces)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libffi-dev && rm -rf /var/lib/apt/lists/*
+    gcc libffi-dev libc-dev && rm -rf /var/lib/apt/lists/*
 
-# Copy backend requirements and install
+# Copy backend requirements, swap netifaces for the maintained fork, and install
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN sed -i 's/^netifaces.*/netifaces-plus>=0.12.3/' requirements.txt && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy the entire workspace (including backend code)
 COPY . .
