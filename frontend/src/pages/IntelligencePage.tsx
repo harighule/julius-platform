@@ -216,12 +216,18 @@ export default function IntelligencePage() {
     setLookupError('')
     setLookupResult(null)
     try {
-      const r = await axios.post<LookupRecord>('/api/intelligence/company-lookup', { query: lookupQuery })
-      setLookupResult(r.data)
+      const r = await axios.post<{ success: boolean; result: LookupRecord }>(
+        '/api/intelligence/company-lookup',
+        { company_name: lookupQuery }
+      )
+      setLookupResult(r.data.result)
       fetchLookupHistory()
     } catch (e: unknown) {
-      const msg = (e as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setLookupError(msg || 'Lookup failed — check backend connection.')
+      const detail = (e as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail
+      const msg = typeof detail === 'string' ? detail : Array.isArray(detail)
+        ? (detail as { msg?: string }[]).map(d => d.msg).join(', ')
+        : 'Lookup failed — check backend connection.'
+      setLookupError(msg)
     } finally {
       setLookupLoading(false)
     }
