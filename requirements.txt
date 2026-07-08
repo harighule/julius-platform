@@ -57,3 +57,4 @@ bgpy-pkg>=0.1.0
 monero>=1.1.1
 web3>=6.11.3
 eth-account>=0.9.0
+reportlab>=4.0.0
