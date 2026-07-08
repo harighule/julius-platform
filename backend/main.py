@@ -605,7 +605,6 @@ from .routers import (
     reports, globe, live, network, status, intelligence,
     lan, osint, workflows, pantheon, signals, stratum, causal_functor, axiom, kronos
 )
-from .routers import leads as leads_router_module
 
 # Register Routers (EXISTING - UNCHANGED)
 app.include_router(auth.router)
@@ -635,7 +634,6 @@ app.include_router(stratum.router)
 app.include_router(causal_functor.router)
 app.include_router(axiom.router)
 app.include_router(kronos.router)
-app.include_router(leads_router_module.router)
 #app.include_router(self_evolution.router)
 #app.include_router(intel_pipeline.router)
 #app.include_router(apex.router)

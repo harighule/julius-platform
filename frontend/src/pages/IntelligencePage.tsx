@@ -183,6 +183,67 @@ export default function IntelligencePage() {
   const [autoRefresh, setAutoRefresh] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  // ── Company Lookup States ──────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<'market' | 'company-lookup'>('market')
+  const [lookupQuery, setLookupQuery] = useState('')
+  const [lookupLoading, setLookupLoading] = useState(false)
+  const [lookupResult, setLookupResult] = useState<any>(null)
+  const [lookupHistory, setLookupHistory] = useState<any[]>([])
+  const [lookupError, setLookupError] = useState('')
+
+  const fetchLookupHistory = useCallback(async () => {
+    try {
+      const res = await axios.get('/api/intelligence/company-lookup/history')
+      if (res.data.success) {
+        setLookupHistory(res.data.records || [])
+      }
+    } catch {
+      // silent fail
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeTab === 'company-lookup') {
+      fetchLookupHistory()
+    }
+  }, [activeTab, fetchLookupHistory])
+
+  const handleCompanyLookup = async () => {
+    if (!lookupQuery.trim()) return
+    setLookupLoading(true)
+    setLookupError('')
+    setLookupResult(null)
+    try {
+      const res = await axios.post('/api/intelligence/company-lookup', {
+        company_name: lookupQuery.trim(),
+        country: 'India',
+        save: true
+      })
+      if (res.data.success) {
+        setLookupResult(res.data.result)
+        fetchLookupHistory()
+      } else {
+        setLookupError('Failed to lookup company details.')
+      }
+    } catch (e: any) {
+      setLookupError(e.response?.data?.detail || e.message || 'Lookup failed.')
+    } finally {
+      setLookupLoading(false)
+    }
+  }
+
+  const handleDeleteLookup = async (id: string) => {
+    try {
+      await axios.delete(`/api/intelligence/company-lookup/${id}`)
+      fetchLookupHistory()
+      if (lookupResult?.id === id) {
+        setLookupResult(null)
+      }
+    } catch (e: any) {
+      // silent
+    }
+  }
+
   // ── Deep-Dive AI States ───────────────────────────────────────────────────
   const [activeDeepDive, setActiveDeepDive] = useState<string | null>(null)
   const [deepDiveData, setDeepDiveData] = useState<{ title: string; explanation: string; engine: string } | null>(null)
@@ -300,7 +361,7 @@ export default function IntelligencePage() {
             <h1 className="font-display text-xl font-black tracking-widest text-julius-accent glow-cyan">
               ◈ INTELLIGENCE ENGINE
             </h1>
-            {liveUpdating && (
+            {liveUpdating && activeTab === 'market' && (
               <div className="flex items-center gap-1.5 text-[10px] text-julius-green">
                 <PulsingDot />
                 <span>LIVE</span>
@@ -314,7 +375,7 @@ export default function IntelligencePage() {
 
         {/* Stats bar */}
         <div className="flex flex-wrap items-center gap-3 text-[10px] text-julius-muted">
-          {dbStats && (
+          {dbStats && activeTab === 'market' && (
             <>
               <span className="flex items-center gap-1">
                 <PulsingDot color="bg-julius-accent" />
@@ -324,266 +385,69 @@ export default function IntelligencePage() {
               {lastUpdated && <span className="text-julius-green">↻ {lastUpdated}</span>}
             </>
           )}
-          <button
-            onClick={() => setAutoRefresh(v => !v)}
-            className={`px-2.5 py-1 rounded border text-[10px] transition-all ${autoRefresh ? 'border-julius-green/50 text-julius-green bg-julius-green/5' : 'border-julius-border text-julius-muted hover:border-julius-accent/50'}`}
-          >
-            {autoRefresh ? '⏸ Auto-Refresh ON' : '▶ Auto-Refresh'}
-          </button>
-          <button
-            onClick={handleRefreshDb}
-            className="px-2.5 py-1 rounded border border-julius-border text-julius-muted hover:border-julius-accent/50 hover:text-julius-accent text-[10px] transition-all"
-          >
-            ⟳ Refresh DB
-          </button>
+          {activeTab === 'market' && (
+            <>
+              <button
+                onClick={() => setAutoRefresh(v => !v)}
+                className={`px-2.5 py-1 rounded border text-[10px] transition-all ${autoRefresh ? 'border-julius-green/50 text-julius-green bg-julius-green/5' : 'border-julius-border text-julius-muted hover:border-julius-accent/50'}`}
+              >
+                {autoRefresh ? '⏸ Auto-Refresh ON' : '▶ Auto-Refresh'}
+              </button>
+              <button
+                onClick={handleRefreshDb}
+                className="px-2.5 py-1 rounded border border-julius-border text-julius-muted hover:border-julius-accent/50 hover:text-julius-accent text-[10px] transition-all"
+              >
+                ⟳ Refresh DB
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* ── SEARCH ─────────────────────────────────────────────────────── */}
-      <div className="flex gap-3 mb-5 max-w-2xl">
-        <div className="relative flex-1">
-          <input
-            id="intel-search"
-            type="text"
-            placeholder="Search company or ticker — AAPL, Tesla, NVDA..."
-            value={search}
-            onChange={e => { setSearch(e.target.value); setShowDrop(true) }}
-            onFocus={() => setShowDrop(true)}
-            onBlur={() => setTimeout(() => setShowDrop(false), 160)}
-            className="w-full px-4 py-3 rounded-lg text-sm bg-julius-surface border border-julius-border text-julius-text outline-none focus:border-julius-accent/60 transition-all placeholder:text-julius-muted"
-          />
-          {selected && search && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-julius-accent font-bold">
-              {selected.symbol}
-            </span>
-          )}
-          {showDrop && search && filtered.length > 0 && (
-            <div className="absolute z-50 w-full mt-1 rounded-lg overflow-hidden bg-julius-surface border border-julius-border shadow-2xl">
-              {filtered.map(c => (
-                <button
-                  key={c.symbol}
-                  onMouseDown={() => { setSelected(c); setSearch(`${c.name} (${c.symbol})`); setShowDrop(false) }}
-                  className="w-full flex justify-between items-center px-4 py-2.5 text-xs text-left border-b border-julius-border hover:bg-julius-surface2 transition-all"
-                >
-                  <div>
-                    <span className="text-julius-text font-medium">{c.name}</span>
-                    <span className="text-[10px] text-julius-muted ml-2">{c.sector}</span>
-                  </div>
-                  <span className="font-bold text-julius-accent text-[11px]">{c.symbol}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+      {/* ── TAB BAR ─────────────────────────────────────────────────────── */}
+      <div className="flex gap-4 mb-6 border-b border-julius-border pb-3">
         <button
-          id="intel-analyse-btn"
-          onClick={handleAnalyse}
-          disabled={loading || !search.trim()}
-          className="px-6 py-3 rounded-lg font-bold text-sm bg-julius-accent text-black hover:opacity-90 disabled:opacity-40 transition-all min-w-[120px]"
+          onClick={() => setActiveTab('market')}
+          className={`pb-2 px-1 text-sm font-bold tracking-wider uppercase transition-all border-b-2 ${
+            activeTab === 'market'
+              ? 'border-julius-accent text-julius-accent'
+              : 'border-transparent text-julius-muted hover:text-julius-text'
+          }`}
         >
-          {loading ? '⟳ Scanning…' : '⚡ Analyse'}
+          ◈ Market Intelligence
+        </button>
+        <button
+          onClick={() => setActiveTab('company-lookup')}
+          className={`pb-2 px-1 text-sm font-bold tracking-wider uppercase transition-all border-b-2 ${
+            activeTab === 'company-lookup'
+              ? 'border-julius-accent text-julius-accent'
+              : 'border-transparent text-julius-muted hover:text-julius-text'
+          }`}
+        >
+          🏢 Live Company OSINT Lookup
         </button>
       </div>
 
-      {/* ── ERROR ──────────────────────────────────────────────────────── */}
-      {error && (
-        <div className="mb-4 px-4 py-3 rounded-lg text-xs border border-julius-red/40 bg-julius-red/5 text-julius-red">
-          ⚠ {error}
-        </div>
-      )}
-
-      {loading && <Spinner />}
-
-      {/* ── REPORT ─────────────────────────────────────────────────────── */}
-      {report && !loading && (
-        <div className="space-y-5">
-
-          {/* Company header */}
-          <div className="rounded-xl border border-julius-border bg-julius-surface p-5 flex flex-col lg:flex-row lg:items-start justify-between gap-5">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <span className="font-display text-2xl font-black text-julius-accent glow-cyan">{report.symbol}</span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-julius-surface2 border border-julius-border text-julius-muted">{report.sector}</span>
-                {autoRefresh && <span className="flex items-center gap-1 text-[10px] text-julius-green"><PulsingDot /> LIVE</span>}
-              </div>
-              <h2 className="text-base font-bold text-julius-text">{report.company}</h2>
-              <p className="text-[10px] text-julius-muted mt-1">
-                Last analysed: {new Date(report.timestamp).toLocaleString()} · Source: public market data
-              </p>
-            </div>
-
-            {/* Corporate contact */}
-            {report.contact && (
-              <div className="rounded-lg p-4 bg-julius-surface2 border border-julius-border min-w-[260px]">
-                <div className="text-[10px] font-bold text-julius-accent mb-2 tracking-widest">◈ CORPORATE CONTACT</div>
-                <div className="space-y-1 text-[11px] text-julius-muted">
-                  <div className="flex gap-2"><span>📍</span><span className="break-all">{report.contact.address || 'N/A'}</span></div>
-                  <div className="flex gap-2"><span>📞</span><span>{report.contact.phone || 'N/A'}</span></div>
-                  <div className="flex gap-2">
-                    <span>🌐</span>
-                    {report.contact.website && report.contact.website !== 'N/A'
-                      ? <a href={report.contact.website} target="_blank" rel="noreferrer" className="text-julius-accent hover:underline">{report.contact.domain}</a>
-                      : <span>N/A</span>
-                    }
-                  </div>
-                  <div className="flex gap-2"><span>✉</span><span>{report.contact.email || 'N/A'}</span></div>
-                  <div className="flex gap-2"><span>👥</span><span>{report.contact.employees || 'N/A'} employees · {report.contact.hq_country || 'N/A'}</span></div>
-                </div>
-              </div>
-            )}
-
-            {/* Macro & Social Indicators */}
-            {report.macro_signals && report.reddit_sentiment && (
-              <div className="rounded-lg p-4 bg-julius-surface2 border border-julius-border min-w-[260px] flex-1 lg:max-w-[340px]">
-                <div className="text-[10px] font-bold text-julius-accent mb-2 tracking-widest">◈ MACRO & SOCIAL TRACKER</div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px] text-julius-muted">
-                  <div>VIX Index: <span className="text-julius-text font-bold">{report.macro_signals?.vix?.toFixed(1) || 'N/A'}</span></div>
-                  <div>Gold Spot: <span className="text-julius-text font-bold">${report.macro_signals?.gold?.toFixed(0) || 'N/A'}</span></div>
-                  <div>Crude Oil: <span className="text-julius-text font-bold">${report.macro_signals?.oil?.toFixed(1) || 'N/A'}</span></div>
-                  <div>EUR/USD: <span className="text-julius-text font-bold">{report.macro_signals?.eurusd?.toFixed(3) || 'N/A'}</span></div>
-                  <div className="col-span-2 border-t border-julius-border/40 my-1"></div>
-                  <div>Reddit Posts: <span className="text-julius-text font-bold">{report.reddit_sentiment?.mention_volume ?? 0}</span></div>
-                  <div>Sentiment: <span className={`font-bold ${report.reddit_sentiment?.sentiment > 0.05 ? 'text-julius-green' : report.reddit_sentiment?.sentiment < -0.05 ? 'text-julius-red' : 'text-julius-text'}`}>{report.reddit_sentiment?.sentiment?.toFixed(2) ?? '0.00'}</span></div>
-                  <div className="col-span-2">
-                    Regime: <span className={`font-bold uppercase ${report.macro_signals?.risk_regime === 'risk-on' ? 'text-julius-green' : 'text-julius-red'}`}>{report.macro_signals?.risk_regime || 'N/A'}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 8-Category Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-
-            {/* 1 — Purchase Intent */}
-            <Card title="Purchase Intent Forecast" icon="🎯" accent onClick={() => handleOpenDeepDive('purchase_intent')}>
-              <div className={`text-4xl font-black mb-1 font-display ${scoreColor(report.purchase_intent.score)}`}>
-                {report.purchase_intent.percent}%
-              </div>
-              <div className="flex flex-wrap mb-3">
-                <Badge text={report.purchase_intent?.confidence?.toUpperCase() || 'UNKNOWN'} type={report.purchase_intent?.score > 0.65 ? 'good' : report.purchase_intent?.score > 0.42 ? 'accent' : 'bad'} />
-                <Badge text={`⏱ ${report.purchase_intent.timeframe}`} type="neutral" />
-              </div>
-              <p className="text-[11px] text-julius-muted leading-relaxed mb-3">{report.purchase_intent.narrative}</p>
-              <ScoreBar value={report.purchase_intent.factors.google_trend} label="Google Trend Signal" />
-              <ScoreBar value={Math.max(0, (report.purchase_intent.factors.news_sentiment + 1) / 2)} label="NewsAPI Sentiment" />
-              <ScoreBar value={Math.min(1, report.purchase_intent.factors.revenue_growth * 3 + 0.3)} label="Revenue Growth Signal" />
-              <ScoreBar value={report.purchase_intent.factors.analyst_rating} label="Analyst Consensus" />
-              {report.purchase_intent.factors.fred_demand != null && (
-                <ScoreBar value={report.purchase_intent.factors.fred_demand} label="FRED Macro Demand" />
-              )}
-              {report.purchase_intent.factors.gdelt_tone != null && (
-                <ScoreBar value={Math.max(0, (report.purchase_intent.factors.gdelt_tone + 1) / 2)} label="GDELT Geopolitical Tone" />
-              )}
-            </Card>
-
-            {/* 2 — Enterprise Buying Signals */}
-            <Card title="Enterprise Buying Signals" icon="🏢" onClick={() => handleOpenDeepDive('enterprise_buying')}>
-              <div className={`text-4xl font-black mb-1 font-display ${scoreColor(report.enterprise_buying.score)}`}>
-                {pctStr(report.enterprise_buying.score)}
-              </div>
-              <div className="flex flex-wrap mb-3">
-                <Badge text={report.enterprise_buying?.confidence?.toUpperCase() || 'UNKNOWN'} type={report.enterprise_buying?.score > 0.6 ? 'good' : 'neutral'} />
-              </div>
-              <div className="space-y-1 mb-3">
-                {report.enterprise_buying.inferred_signals.map((s, i) => (
-                  <div key={i} className="text-[11px] flex items-start gap-2">
-                    <span className="text-julius-accent mt-0.5">›</span>
-                    <span className="text-julius-muted">{s}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <StatBox label="Job Posts" value={report.enterprise_buying.raw_signals.job_postings.toLocaleString()} />
-                <StatBox label="GH Stars" value={report.enterprise_buying.raw_signals.github_stars.toLocaleString()} />
-                <StatBox label="GH Forks" value={report.enterprise_buying.raw_signals.github_forks.toLocaleString()} />
-              </div>
-            </Card>
-
-            {/* 3 — Consumer Category Demand */}
-            <Card title="Consumer Category Demand" icon="📊" onClick={() => handleOpenDeepDive('consumer_demand')}>
-              <div className="text-[11px] text-julius-muted mb-3">
-                Highest demand: <span className="text-julius-green font-bold">{report.consumer_demand.most_demand}</span>
-              </div>
-              <div className="space-y-1 max-h-52 overflow-y-auto pr-1">
-                {Object.entries(report.consumer_demand.categories).map(([cat, d]) => (
-                  <div key={cat}>
-                    <div className="flex justify-between text-[10px] mb-0.5">
-                      <span className="text-julius-text capitalize">{cat}</span>
-                      <span className={`font-bold ${signalTextColor(d['3m_forecast'])}`}>{d['3m_forecast']}</span>
-                    </div>
-                    <ScoreBar value={d.demand_index} label="" />
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* 4 — Revenue Momentum */}
-            <Card title="Revenue Momentum" icon="📈" onClick={() => handleOpenDeepDive('revenue_momentum')}>
-              <div className="flex items-baseline gap-3 mb-3">
-                <span className={`text-2xl font-black font-display uppercase ${scoreColor(report.revenue_momentum.score)}`}>
-                  {report.revenue_momentum.direction}
+      {/* ── MARKET INTELLIGENCE TAB ────────────────────────────────────── */}
+      {activeTab === 'market' && (
+        <>
+          {/* ── SEARCH ─────────────────────────────────────────────────────── */}
+          <div className="flex gap-3 mb-5 max-w-2xl">
+            <div className="relative flex-1">
+              <input
+                id="intel-search"
+                type="text"
+                placeholder="Search company or ticker — AAPL, Tesla, NVDA..."
+                value={search}
+                onChange={e => { setSearch(e.target.value); setShowDrop(true) }}
+                onFocus={() => setShowDrop(true)}
+                onBlur={() => setTimeout(() => setShowDrop(false), 160)}
+                className="w-full px-4 py-3 rounded-lg text-sm bg-julius-surface border border-julius-border text-julius-text outline-none focus:border-julius-accent/60 transition-all placeholder:text-julius-muted"
+              />
+              {selected && search && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-julius-accent font-bold">
+                  {selected.symbol}
                 </span>
-                <Badge text={report.revenue_momentum?.confidence?.toUpperCase() || 'UNKNOWN'} type={report.revenue_momentum?.score > 0.6 ? 'good' : 'neutral'} />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <StatBox label="Revenue TTM" value={report.revenue_momentum.revenue_ttm} />
-                <StatBox label="4W Return" value={report.revenue_momentum.price_4w_return} good={report.revenue_momentum.price_4w_return.startsWith('-') ? false : true} />
-                <StatBox label="Rev Growth" value={report.revenue_momentum.revenue_growth} good={parseFloat(report.revenue_momentum.revenue_growth) > 0 ? true : false} />
-                <StatBox label="EPS Growth" value={report.revenue_momentum.earnings_growth} good={parseFloat(report.revenue_momentum.earnings_growth) > 0 ? true : false} />
-                <StatBox label="Margin" value={report.revenue_momentum.profit_margin} />
-                <StatBox label="Avg Volume" value={report.revenue_momentum.volume_avg} />
-              </div>
-
-              {report.revenue_forecast && (
-                <div className="mt-3 pt-3 border-t border-julius-border/40 text-[10px] text-julius-muted space-y-1">
-                  <div className="font-bold text-julius-accent uppercase tracking-wider">6-Month Trend Forecast</div>
-                  <div className="flex justify-between">
-                    <span>Forecast 6M Change:</span>
-                    <span className={`font-bold ${report.revenue_forecast.trend === 'upward' ? 'text-julius-green' : report.revenue_forecast.trend === 'downward' ? 'text-julius-red' : 'text-julius-text'}`}>
-                      {report.revenue_forecast.forecast_6m_pct} ({report.revenue_forecast.trend})
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Model Confidence (R²):</span>
-                    <span className="font-bold text-julius-text">{report.revenue_forecast?.confidence?.toUpperCase() || 'UNKNOWN'} ({report.revenue_forecast?.rsquared ?? 0.0})</span>
-                  </div>
-                </div>
-              )}
-            </Card>
-
-            {/* 5 — Supply Chain */}
-            <Card title="Supply Chain Intelligence" icon="⛓️" onClick={() => handleOpenDeepDive('supply_chain')}>
-              <div className={`text-2xl font-black font-display mb-2 ${signalTextColor(report.supply_chain.status)}`}>
-                {report.supply_chain?.status?.toUpperCase()?.replace(/_/g, ' ') || 'UNKNOWN'}
-              </div>
-              <ScoreBar value={report.supply_chain.risk_score} label="Risk Score" />
-              <div className="mt-2 space-y-1">
-                {report.supply_chain.risk_flags.map((f, i) => (
-                  <div key={i} className="text-[11px] flex items-start gap-2">
-                    <span className={report.supply_chain.risk_score > 0.55 ? 'text-julius-red' : 'text-julius-amber'}>⚑</span>
-                    <span className="text-julius-muted">{f}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <StatBox label="News Sentiment" value={report.supply_chain.news_sentiment.toFixed(3)} good={report.supply_chain.news_sentiment > 0 ? true : false} />
-                <StatBox label="Forecast" value={report.supply_chain.forecast} good={report.supply_chain.forecast === 'stable' ? true : false} />
-              </div>
-            </Card>
-
-            {/* 6 — Corporate Expansion */}
-            <Card title="Corporate Expansion Score" icon="🌍" onClick={() => handleOpenDeepDive('corporate_expansion')}>
-              <div className={`text-4xl font-black mb-1 font-display ${scoreColor(report.corporate_expansion.expansion_score)}`}>
-                {pctStr(report.corporate_expansion.expansion_score)}
-              </div>
-              <div className="flex flex-wrap mb-3">
-                <Badge text={report.corporate_expansion?.confidence?.toUpperCase() || 'UNKNOWN'} type={report.corporate_expansion?.expansion_score > 0.65 ? 'good' : 'neutral'} />
-                <Badge text={`⏱ ${report.corporate_expansion.timeframe}`} />
-              </div>
-              <div className="space-y-1 mb-3">
-                {report.corporate_expansion.likely_actions.map((a, i) => (
-                  <div key={i} className="text-[11px] flex items-start gap-2">
                     <span className="text-julius-green">✓</span>
                     <span className="text-julius-muted">{a}</span>
                   </div>

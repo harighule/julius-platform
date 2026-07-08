@@ -25,7 +25,6 @@ import { GuardianDashboard } from './panels/GuardianDashboard'
 import { BgpMitmPanel } from './panels/BgpMitmPanel'
 import { CutsMonitor } from './components/CutsMonitor';
 import IntelligencePage from './pages/IntelligencePage';
-import { LeadsPanel } from './panels/LeadsPanel';
 
 export const router = createBrowserRouter([
   {
@@ -56,7 +55,6 @@ export const router = createBrowserRouter([
       { path: 'guardian', element: <GuardianDashboard /> },
       { path: 'bgp-mitm', element: <BgpMitmPanel /> },
       { path: 'intelligence', element: <IntelligencePage /> },    
-      { path: 'leads', element: <LeadsPanel /> },
       { path: "cuts-monitor", element: <CutsMonitor /> },
     ],
   },

@@ -381,34 +381,3 @@ export const pantheon = {
     put(`/api/v1/pantheon/access-policy/${encodeURIComponent(policyKey)}`, body),
 }
 
-/* ── B2B Leads ────────────────────────────────────────────────────── */
-export const leads = {
-  search: (payload: {
-    query: string
-    city?: string
-    state?: string
-    max_results?: number
-    save?: boolean
-  }) => post('/api/leads/search', payload),
-
-  list: (params?: { limit?: number; city?: string }) => {
-    const q = new URLSearchParams()
-    if (params?.limit) q.set('limit', String(params.limit))
-    if (params?.city) q.set('city', params.city)
-    return get(`/api/leads/?${q.toString()}`)
-  },
-
-  stats: () => get('/api/leads/stats'),
-
-  deleteLead: (id: string) => del(`/api/leads/${id}`),
-
-  exportCsv: (city?: string) => {
-    const q = city ? `?city=${encodeURIComponent(city)}` : ''
-    return download(`/api/leads/export/csv${q}`)
-  },
-
-  exportJson: (city?: string) => {
-    const q = city ? `?city=${encodeURIComponent(city)}` : ''
-    return download(`/api/leads/export/json${q}`)
-  },
-}

@@ -29,7 +29,6 @@ const NAV = [
   { path: '/ai-systems', icon: 'K', label: 'AI Systems' },
   { path: '/veil', icon: 'V', label: 'Veil' },
   { path: '/intelligence', icon: '◈', label: 'Intelligence' },
-  { path: '/leads', icon: '🏢', label: 'B2B Leads' },
   { path: '/bgp-mitm', icon: '⚡', label: 'BGP MITM' },
 ]
 

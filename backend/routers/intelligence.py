@@ -426,3 +426,262 @@ async def intelligence_ws(websocket: WebSocket):
     finally:
         push_task.cancel()
         _manager.disconnect(websocket)
+
+
+# ─── Company Lookup Endpoint (Live Internet Search) ───────────────────────────
+
+import re as _re
+import json as _json
+import sqlite3 as _sqlite3
+import os as _os
+import uuid as _uuid
+from datetime import datetime as _datetime
+from pydantic import BaseModel as _BaseModel
+from typing import Optional as _Optional
+import httpx as _httpx
+from fastapi.responses import StreamingResponse as _StreamingResponse
+import csv as _csv
+import io as _io
+
+_LOOKUP_DB = _os.path.join(_os.path.dirname(__file__), "..", "database", "company_lookup.db")
+
+def _lookup_conn():
+    c = _sqlite3.connect(_LOOKUP_DB, check_same_thread=False)
+    c.row_factory = _sqlite3.Row
+    c.execute("PRAGMA journal_mode=WAL")
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS company_lookup (
+            id              TEXT PRIMARY KEY,
+            company_name    TEXT,
+            legal_entity    TEXT,
+            city            TEXT,
+            state           TEXT,
+            full_address    TEXT,
+            contact_number  TEXT,
+            email           TEXT,
+            gstin           TEXT,
+            revenue         TEXT,
+            raw_query       TEXT,
+            looked_up_at    TEXT
+        )
+    """)
+    c.commit()
+    return c
+
+
+async def _live_search(query: str) -> list[dict]:
+    """Search DuckDuckGo HTML for snippets and links."""
+    results = []
+    try:
+        async with _httpx.AsyncClient(timeout=10) as client:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+            r = await client.post(
+                "https://html.duckduckgo.com/html/",
+                data={"q": query},
+                headers=headers,
+            )
+            if r.status_code == 200:
+                html = r.text
+                import re
+                # Find snippets
+                snippets = re.findall(r'<a class="result__snippet"[^>]*>(.*?)</a>', html, re.DOTALL)
+                # Find corresponding links if any
+                urls = re.findall(r'<a class="result__url"[^>]* href="([^"]*)"', html, re.DOTALL)
+                
+                for idx, snippet in enumerate(snippets[:10]):
+                    clean_snippet = re.sub(r'<[^>]*>', '', snippet).strip()
+                    url = urls[idx] if idx < len(urls) else ""
+                    results.append({"text": clean_snippet, "url": url})
+    except Exception as e:
+        logger.warning("DDG HTML lookup error: %s", e)
+    return results
+
+
+def _extract_fields(snippets: list[dict], company_name: str) -> dict:
+    """Extract structured fields from raw text snippets."""
+    full_text = " ".join(s.get("text", "") for s in snippets)
+
+    email_m = _re.search(r'[\w.%+\-]+@[\w.\-]+\.[a-zA-Z]{2,}', full_text)
+    phone_m = _re.search(r'(?:\+91[\-\s]?|0)?[6-9]\d{9}', full_text)
+    gstin_m = _re.search(r'\b\d{2}[A-Z]{5}\d{4}[A-Z]\d[Z][A-Z\d]\b', full_text)
+    cin_m   = _re.search(r'\b[UL]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}\b', full_text)
+    pin_m   = _re.search(r'\b[1-9]\d{5}\b', full_text)
+
+    # City detection from common Indian cities
+    cities = ["Mumbai", "Delhi", "Hyderabad", "Bangalore", "Chennai", "Pune",
+              "Kolkata", "Ahmedabad", "Navi Mumbai", "Noida", "Gurgaon", "Kochi"]
+    city = next((c for c in cities if c.lower() in full_text.lower()), None)
+
+    states = {
+        "Maharashtra": ["Mumbai", "Navi Mumbai", "Pune"],
+        "Delhi": ["Delhi", "New Delhi", "Noida", "Gurgaon"],
+        "Telangana": ["Hyderabad"],
+        "Karnataka": ["Bangalore"],
+        "Tamil Nadu": ["Chennai"],
+        "West Bengal": ["Kolkata"],
+        "Gujarat": ["Ahmedabad"],
+        "Kerala": ["Kochi"],
+    }
+    state = next((s for s, clist in states.items() if any(cl in (city or "") for cl in clist)), None)
+
+    # Revenue patterns
+    rev_m = _re.search(
+        r'(?:revenue|turnover|sales)[^\d]*(?:Rs\.?|INR|₹)?\s*[\d,]+(?:\.\d+)?\s*(?:crore|lakh|Cr|L|million|billion)?',
+        full_text, _re.IGNORECASE
+    )
+
+    # Address — grab longest sentence with PIN
+    address = None
+    if pin_m:
+        start = max(0, pin_m.start() - 150)
+        address = full_text[start:pin_m.end() + 10].strip()
+
+    # Legal entity detection
+    entity_patterns = [
+        (r'Private Limited|Pvt\.?\s*Ltd\.?', "Private Limited"),
+        (r'\bLLP\b', "LLP"),
+        (r'Public Limited|Ltd\.?', "Public Limited"),
+        (r'Sole Proprietor|Proprietorship', "Sole Proprietorship"),
+        (r'\bLtd\b', "Limited"),
+    ]
+    legal_entity = None
+    for pattern, label in entity_patterns:
+        if _re.search(pattern, full_text, _re.IGNORECASE):
+            legal_entity = label
+            break
+
+    return {
+        "company_name": company_name,
+        "legal_entity": legal_entity,
+        "city": city,
+        "state": state,
+        "full_address": address,
+        "contact_number": phone_m.group() if phone_m else None,
+        "email": email_m.group() if email_m else None,
+        "gstin": gstin_m.group() if gstin_m else (cin_m.group() if cin_m else None),
+        "revenue": rev_m.group().strip() if rev_m else "Not publicly available",
+    }
+
+
+class CompanyLookupRequest(_BaseModel):
+    company_name: str
+    country: _Optional[str] = "India"
+    save: bool = True
+
+
+@router.post("/company-lookup")
+async def company_lookup(req: CompanyLookupRequest):
+    """
+    Live internet lookup for a company's details:
+    Legal entity, city, state, address, contact, email, GSTIN/CIN, revenue.
+    Searches open web sources dynamically — no fixed data.
+    """
+    query = f"{req.company_name} {req.country or ''} company address contact email GSTIN CIN".strip()
+    snippets = await _live_search(query)
+
+    # Also try more targeted searches
+    for suffix in ["official site", "indiamart", "zaubacorp"]:
+        extra = await _live_search(f"{req.company_name} {suffix} contact")
+        snippets.extend(extra)
+
+    fields = _extract_fields(snippets, req.company_name)
+    record_id = _uuid.uuid4().hex
+    fields["id"] = record_id
+    fields["raw_query"] = query
+    fields["looked_up_at"] = _datetime.utcnow().isoformat()
+
+    if req.save:
+        try:
+            c = _lookup_conn()
+            c.execute("""
+                INSERT OR REPLACE INTO company_lookup
+                  (id, company_name, legal_entity, city, state, full_address,
+                   contact_number, email, gstin, revenue, raw_query, looked_up_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                record_id, fields["company_name"], fields["legal_entity"],
+                fields["city"], fields["state"], fields["full_address"],
+                fields["contact_number"], fields["email"],
+                fields["gstin"], fields["revenue"],
+                query, fields["looked_up_at"],
+            ))
+            c.commit()
+            c.close()
+        except Exception as e:
+            logger.warning("Company lookup DB save error: %s", e)
+
+    return {"success": True, "result": fields, "snippets_found": len(snippets)}
+
+
+@router.get("/company-lookup/history")
+async def company_lookup_history(limit: int = 50):
+    """Return previously looked-up companies."""
+    try:
+        c = _lookup_conn()
+        rows = c.execute(
+            "SELECT * FROM company_lookup ORDER BY looked_up_at DESC LIMIT ?", (limit,)
+        ).fetchall()
+        c.close()
+        return {"success": True, "count": len(rows), "records": [dict(r) for r in rows]}
+    except Exception as e:
+        return {"success": False, "error": str(e), "records": []}
+
+
+@router.delete("/company-lookup/{record_id}")
+async def delete_lookup_record(record_id: str):
+    """Delete a stored company lookup record."""
+    try:
+        c = _lookup_conn()
+        c.execute("DELETE FROM company_lookup WHERE id = ?", (record_id,))
+        c.commit()
+        c.close()
+        return {"success": True, "deleted": record_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/company-lookup/export/csv")
+async def export_lookup_csv():
+    """Download all stored company lookup records as CSV."""
+    try:
+        c = _lookup_conn()
+        rows = [dict(r) for r in c.execute(
+            "SELECT * FROM company_lookup ORDER BY looked_up_at DESC"
+        ).fetchall()]
+        c.close()
+    except Exception:
+        rows = []
+
+    output = _io.StringIO()
+    if rows:
+        writer = _csv.DictWriter(output, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+    output.seek(0)
+    return _StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=company_lookup_report.csv"},
+    )
+
+
+@router.get("/company-lookup/export/json")
+async def export_lookup_json():
+    """Download all stored company lookup records as JSON."""
+    try:
+        c = _lookup_conn()
+        rows = [dict(r) for r in c.execute(
+            "SELECT * FROM company_lookup ORDER BY looked_up_at DESC"
+        ).fetchall()]
+        c.close()
+    except Exception:
+        rows = []
+
+    payload = _json.dumps({"count": len(rows), "records": rows}, indent=2, ensure_ascii=False)
+    return _StreamingResponse(
+        iter([payload]),
+        media_type="application/json",
+        headers={"Content-Disposition": "attachment; filename=company_lookup_report.json"},
+    )
